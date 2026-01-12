@@ -4,6 +4,7 @@ Presentation endpoints for the PPTX API
 from fastapi import APIRouter, UploadFile, File, HTTPException, status, Form
 from fastapi.responses import FileResponse
 from pathlib import Path
+from typing import Optional
 
 from app.models.schemas import (
     PresentationCreateRequest,
