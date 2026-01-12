@@ -3,7 +3,7 @@ Pydantic schemas for request/response models
 """
 from typing import Optional, List
 from pydantic import BaseModel, Field
-from .enums import PlaceholderType, TextAlignment, VerticalAlignment
+from .enums import TextAlignment, VerticalAlignment
 
 
 class Position(BaseModel):
