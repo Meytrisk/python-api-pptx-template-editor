@@ -62,18 +62,18 @@ async def create_presentation(request: PresentationCreateRequest):
     "/{presentation_id}/text",
     response_model=ContentInsertResponse,
     summary="Insert text into a presentation",
-    description="Insert text into a specific placeholder in the presentation"
+    description="Scan the document and replace all instances of {{variable_name}} with the provided text."
 )
 async def insert_text(presentation_id: str, request: TextInsertRequest):
     """
-    Insert text into a placeholder
+    Replace text variables in the presentation
     
     - **presentation_id**: ID of the presentation
-    - **placeholder_name**: Name of the placeholder to insert text into
+    - **variable_name**: Name of the variable to replace (without {{}})
     - **text**: Text content to insert
     - **formatting**: Optional text formatting (font, size, color, alignment, etc.)
     
-    The text will be inserted into the specified placeholder. Formatting is optional.
+    The API will look for {{variable_name}} throughout the entire presentation.
     """
     try:
         file_service = FileService()
@@ -82,43 +82,41 @@ async def insert_text(presentation_id: str, request: TextInsertRequest):
         # Insert text
         pptx_service.insert_text(
             presentation_id=presentation_id,
-            placeholder_name=request.placeholder_name,
+            variable_name=request.variable_name,
             text=request.text,
             formatting=request.formatting
         )
         
         return ContentInsertResponse(
             success=True,
-            message=f"Text inserted successfully into placeholder '{request.placeholder_name}'"
+            message=f"Variable '{{{{{request.variable_name}}}}}' replaced successfully"
         )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to insert text: {str(e)}"
+            detail=f"Failed to replace text variable: {str(e)}"
         )
 
 
 @router.post(
     "/{presentation_id}/image",
     response_model=ContentInsertResponse,
-    summary="Insert an image into a presentation",
-    description="Insert an image into a specific placeholder in the presentation. The image will replace an existing image with matching Alt Text."
+    summary="Replace an image variable in the presentation",
+    description="Replace an existing image whose Alt Text matches {{variable_name}} or {{image:variable_name}}."
 )
 async def insert_image(
     presentation_id: str,
-    placeholder_name: str = Form(..., description="Placeholder name to insert image into"),
+    variable_name: str = Form(..., description="Variable name to replace (without {{}})"),
     image: UploadFile = File(..., description="Image file to insert")
 ):
     """
-    Inserta una imagen en la presentación, reemplazando una imagen existente identificada por su **Texto Alternativo (Alt Text)**.
-    - **presentation_id**: ID of the presentation
-    - **placeholder_name**: Name of the placeholder to insert image into
-    - **image**: Image file to insert (PNG, JPG, JPEG, GIF, BMP, TIFF)
+    Replace an image identifying it by its Alt Text variable.
     
-    The image will replace the existing image with the specified Alt Text.
-    Please ensure the template has an image with the corresponding Alt Text.
+    - **presentation_id**: ID of the presentation
+    - **variable_name**: Name of the variable (will search for {{variable_name}} or {{image:variable_name}} in Alt Text)
+    - **image**: Image file to insert (PNG, JPG, JPEG, GIF, BMP, TIFF)
     """
     try:
         file_service = FileService()
@@ -131,7 +129,7 @@ async def insert_image(
         # Insert image
         pptx_service.insert_image(
             presentation_id=presentation_id,
-            placeholder_name=placeholder_name,
+            variable_name=variable_name,
             image_path=image_path
         )
         
@@ -140,14 +138,14 @@ async def insert_image(
         
         return ContentInsertResponse(
             success=True,
-            message=f"Image inserted successfully into placeholder '{placeholder_name}'"
+            message=f"Image variable '{{{{{variable_name}}}}}' replaced successfully"
         )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to insert image: {str(e)}"
+            detail=f"Failed to replace image variable: {str(e)}"
         )
 
 

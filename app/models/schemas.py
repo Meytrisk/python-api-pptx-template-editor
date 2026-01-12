@@ -18,25 +18,17 @@ class Size(BaseModel):
     height: float
 
 
-class PlaceholderInfo(BaseModel):
-    """Information about a placeholder in a slide"""
-    idx: int = Field(..., description="Placeholder index")
-    name: str = Field(..., description="Placeholder name")
-    type: PlaceholderType = Field(..., description="Placeholder type")
-    position: Optional[Position] = None
-    size: Optional[Size] = None
+class VariableInfo(BaseModel):
+    """Information about a variable detected in a template"""
+    name: str = Field(..., description="Variable name (without the curly braces)")
+    type: str = Field(..., description="Type of variable (text or image)")
+    slide_index: int = Field(..., description="Index of the slide where the variable was found")
 
 
-class SlidePlaceholders(BaseModel):
-    """Placeholders in a slide"""
-    slide_index: int
-    placeholders: List[PlaceholderInfo]
-
-
-class TemplatePlaceholders(BaseModel):
-    """All placeholders in a template"""
+class TemplateVariables(BaseModel):
+    """All variables detected in a template"""
     template_id: str
-    slides: List[SlidePlaceholders]
+    variables: List[VariableInfo]
 
 
 class TextFormatting(BaseModel):
@@ -52,15 +44,15 @@ class TextFormatting(BaseModel):
 
 
 class TextInsertRequest(BaseModel):
-    """Request to insert text into a placeholder"""
-    placeholder_name: str = Field(..., description="Placeholder name to insert text into")
+    """Request to insert text into a variable"""
+    variable_name: str = Field(..., description="Variable name to replace (without {{}})")
     text: str = Field(..., min_length=1, description="Text content to insert")
     formatting: Optional[TextFormatting] = Field(None, description="Optional text formatting")
 
 
 class ImageInsertRequest(BaseModel):
-    """Request to insert an image into a placeholder"""
-    placeholder_name: str = Field(..., description="Alt Text of the image to replace")
+    """Request to insert an image into a variable"""
+    variable_name: str = Field(..., description="Variable name to replace (from Alt Text)")
 
 
 class TemplateUploadResponse(BaseModel):

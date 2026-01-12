@@ -6,7 +6,7 @@ from typing import List
 
 from app.models.schemas import (
     TemplateUploadResponse,
-    TemplatePlaceholders,
+    TemplateVariables,
     ErrorResponse,
     ContentInsertResponse
 )
@@ -53,36 +53,32 @@ async def upload_template(
 
 
 @router.get(
-    "/{template_id}/placeholders",
-    response_model=TemplatePlaceholders,
-    summary="Get placeholders from a template",
-    description="Retrieve all placeholders from a template, including their types, names, and positions"
+    "/{template_id}/variables",
+    response_model=TemplateVariables,
+    summary="Get variables from a template",
+    description="Scan the template and retrieve all {{variable}} patterns found in text and alt text"
 )
-async def get_template_placeholders(template_id: str):
+async def get_template_variables(template_id: str):
     """
-    Get all placeholders from a template
+    Get all variables detected in a template
     
     - **template_id**: Unique identifier of the template
     
-    Returns information about all placeholders in the template, including:
-    - Placeholder index (idx)
-    - Placeholder name
-    - Placeholder type (TITLE, BODY, PICTURE, etc.)
-    - Position and size (if available)
+    Returns a list of variables found in the template using the {{variable}} syntax.
     """
     try:
         file_service = FileService()
         pptx_service = PPTXService(file_service)
         
-        placeholders = pptx_service.get_template_placeholders(template_id)
+        variables = pptx_service.get_template_variables(template_id)
         
-        return placeholders
+        return variables
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get placeholders: {str(e)}"
+            detail=f"Failed to get variables: {str(e)}"
         )
 
 
