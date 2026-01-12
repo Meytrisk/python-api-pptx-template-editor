@@ -35,13 +35,16 @@ class PPTXService:
     def _get_alt_text(self, shape) -> Optional[str]:
         """Helper to extract Alt Text from a shape's XML"""
         try:
-            nvPr = shape._element.nvXxPr
-            cNvPr = nvPr.find('p:cNvPr', namespaces=nvPr.nsmap)
-            if cNvPr is None:
-                cNvPr = nvPr.find('*/p:cNvPr', namespaces=nvPr.nsmap)
+            # Look for cNvPr element which contains the non-visual properties (including Alt Text)
+            # It's usually a child of nvSpPr, nvPicPr, etc.
+            cNvPr = shape._element.find('.//p:cNvPr', namespaces=shape._element.nsmap)
             
             if cNvPr is not None:
-                return cNvPr.get("descr")
+                # Alt Text can be in 'descr' or 'title' attributes
+                descr = cNvPr.get("descr")
+                if descr:
+                    return descr
+                return cNvPr.get("title")
         except Exception:
             pass
         return None
