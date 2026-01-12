@@ -55,6 +55,48 @@ Para las imágenes, se utiliza el **Texto Alternativo (Alt Text)**.
 
 ### Templates
 
+#### GET `/api/v1/templates`
+
+Obtiene la lista de todos los templates subidos.
+
+**Ejemplo con cURL:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/templates"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "templates": [
+    {
+      "template_id": "uuid-1",
+      "filename": "uuid-1.pptx"
+    }
+  ]
+}
+```
+
+---
+
+#### POST `/api/v1/templates/upload`
+
+Sube un nuevo template PPTX.
+
+**Body (multipart/form-data):**
+
+- `file`: [Archivo binario .pptx]
+
+**Response (201 Created):**
+
+```json
+{
+  "template_id": "uuid-of-new-template",
+  "filename": "uploaded_template.pptx"
+}
+```
+
 #### GET `/api/v1/templates/{template_id}/variables`
 
 Escanea el template y devuelve todas las variables encontradas.
@@ -74,6 +116,29 @@ Escanea el template y devuelve todas las variables encontradas.
 ---
 
 ### Presentaciones
+
+#### GET `/api/v1/presentations`
+
+Obtiene la lista de todas las presentaciones generadas.
+
+**Ejemplo con cURL:**
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/presentations"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "presentations": [
+    {
+      "presentation_id": "uuid-pptx",
+      "filename": "uuid-pptx.pptx"
+    }
+  ]
+}
+```
 
 #### POST `/api/v1/presentations/{presentation_id}/text`
 
@@ -101,6 +166,26 @@ Reemplaza una imagen identificada por su variable en el Alt Text.
 
 - `variable_name`: "foto_perfil"
 - `image`: [Archivo binario]
+
+#### DELETE `/api/v1/templates/{template_id}`
+
+Elimina un template del servidor.
+
+**Ejemplo con cURL:**
+
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/templates/{id}"
+```
+
+#### DELETE `/api/v1/presentations/{presentation_id}`
+
+Elimina una presentación del servidor.
+
+**Ejemplo con cURL:**
+
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/presentations/{id}"
+```
 
 ---
 

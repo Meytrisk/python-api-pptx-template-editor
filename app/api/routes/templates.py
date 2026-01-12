@@ -6,6 +6,7 @@ from typing import List
 
 from app.models.schemas import (
     TemplateUploadResponse,
+    TemplateListResponse,
     TemplateVariables,
     ErrorResponse,
     ContentInsertResponse
@@ -49,6 +50,29 @@ async def upload_template(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload template: {str(e)}"
+        )
+
+
+@router.get(
+    "/",
+    response_model=TemplateListResponse,
+    summary="List all templates",
+    description="Get a list of all PowerPoint templates currently uploaded to the server"
+)
+async def list_templates():
+    """
+    List all available templates
+    
+    Returns a list of templates with their IDs and filenames.
+    """
+    try:
+        file_service = FileService()
+        templates = file_service.list_templates()
+        return TemplateListResponse(templates=templates)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list templates: {str(e)}"
         )
 
 

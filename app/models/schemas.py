@@ -55,6 +55,16 @@ class ImageInsertRequest(BaseModel):
     variable_name: str = Field(..., description="Variable name to replace (from Alt Text)")
 
 
+class TemplateInfo(BaseModel):
+    """Basic information about a template"""
+    template_id: str
+    filename: str
+
+class TemplateListResponse(BaseModel):
+    """Response containing a list of templates"""
+    templates: List[TemplateInfo]
+
+
 class TemplateUploadResponse(BaseModel):
     """Response after uploading a template"""
     template_id: str = Field(..., description="Unique template identifier")
@@ -65,6 +75,17 @@ class TemplateUploadResponse(BaseModel):
 class PresentationCreateRequest(BaseModel):
     """Request to create a presentation from a template"""
     template_id: str = Field(..., description="Template ID to use")
+
+
+class PresentationInfo(BaseModel):
+    """Basic information about a presentation"""
+    presentation_id: str
+    template_id: Optional[str] = None
+    filename: str
+
+class PresentationListResponse(BaseModel):
+    """Response containing a list of presentations"""
+    presentations: List[PresentationInfo]
 
 
 class PresentationCreateResponse(BaseModel):

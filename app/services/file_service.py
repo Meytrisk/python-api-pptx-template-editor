@@ -250,3 +250,35 @@ class FileService:
             return True
         except Exception:
             return False
+
+    def list_templates(self) -> list[dict]:
+        """
+        List all available templates
+        
+        Returns:
+            List of dictionaries containing template information
+        """
+        templates = []
+        for file_path in self.templates_dir.glob("*.pptx"):
+            if file_path.is_file():
+                templates.append({
+                    "template_id": file_path.stem,
+                    "filename": file_path.name
+                })
+        return templates
+
+    def list_presentations(self) -> list[dict]:
+        """
+        List all available presentations
+        
+        Returns:
+            List of dictionaries containing presentation information
+        """
+        presentations = []
+        for file_path in self.outputs_dir.glob("*.pptx"):
+            if file_path.is_file():
+                presentations.append({
+                    "presentation_id": file_path.stem,
+                    "filename": file_path.name
+                })
+        return presentations

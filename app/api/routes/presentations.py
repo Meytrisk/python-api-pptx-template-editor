@@ -8,6 +8,7 @@ from pathlib import Path
 from app.models.schemas import (
     PresentationCreateRequest,
     PresentationCreateResponse,
+    PresentationListResponse,
     TextInsertRequest,
     ImageInsertRequest,
     ContentInsertResponse
@@ -17,6 +18,29 @@ from app.services.pptx_service import PPTXService
 
 
 router = APIRouter(prefix="/api/v1/presentations", tags=["presentations"])
+
+
+@router.get(
+    "/",
+    response_model=PresentationListResponse,
+    summary="List all presentations",
+    description="Get a list of all PowerPoint presentations currently stored on the server"
+)
+async def list_presentations():
+    """
+    List all available presentations
+    
+    Returns a list of presentations with their IDs and filenames.
+    """
+    try:
+        file_service = FileService()
+        presentations = file_service.list_presentations()
+        return PresentationListResponse(presentations=presentations)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list presentations: {str(e)}"
+        )
 
 
 @router.post(
