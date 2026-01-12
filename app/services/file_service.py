@@ -90,19 +90,37 @@ class FileService:
         Raises:
             HTTPException: If file is invalid
         """
-        # Validate file extension
-        allowed_extensions = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff'}
-        if not file.filename or Path(file.filename).suffix.lower() not in allowed_extensions:
+        # Map content types to extensions (helps with n8n/binary uploads)
+        content_type_map = {
+            'image/png': '.png',
+            'image/jpeg': '.jpg',
+            'image/jpg': '.jpg',
+            'image/gif': '.gif',
+            'image/bmp': '.bmp',
+            'image/tiff': '.tiff',
+            'image/webp': '.webp'
+        }
+        
+        allowed_extensions = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp'}
+        
+        # Get extension from filename
+        file_extension = Path(file.filename).suffix.lower() if file.filename else ""
+        
+        # If no extension in filename or invalid, try to get it from content_type
+        if file_extension not in allowed_extensions:
+            file_extension = content_type_map.get(file.content_type.lower() if file.content_type else "", "")
+            
+        # Last check
+        if file_extension not in allowed_extensions:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid image format. Allowed formats: {', '.join(allowed_extensions)}"
+                detail=f"Invalid or missing image extension. Detected type: {file.content_type}. Allowed formats: {', '.join(allowed_extensions)}"
             )
         
         # Generate unique ID
         image_id = self.generate_id()
         
         # Create file path
-        file_extension = Path(file.filename).suffix
         filename = f"{image_id}{file_extension}"
         file_path = self.images_dir / filename
         
