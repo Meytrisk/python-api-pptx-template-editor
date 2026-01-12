@@ -26,11 +26,22 @@ API REST profesional para la automatización de presentaciones de PowerPoint. Ol
 2. Ejecutar: `python app/main.py`
 3. Swagger UI: `http://localhost:8000/docs`
 
-### Docker (Recomendado)
-
 ```bash
 docker-compose up -d
 ```
+
+## 🛡️ Control de Calidad (Antes de hacer Push)
+
+Para evitar que errores de sintaxis o importaciones falten lleguen a producción, puedes ejecutar:
+
+1. **Verificación rápida de importaciones**:
+   ```bash
+   python scripts/verify_build.py
+   ```
+2. **Prueba de construcción Docker**:
+   ```bash
+   docker build -t pptx-test .
+   ```
 
 ## 📝 Ejemplo Rápido de Flujo
 
