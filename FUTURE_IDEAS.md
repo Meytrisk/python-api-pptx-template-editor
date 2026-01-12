@@ -17,3 +17,12 @@ Este documento registra funcionalidades planificadas para el futuro que no se de
 ## 3. Previsualización de diapositivas
 
 - **Objetivo**: Endpoint para generar una imagen (PNG/JPG) de una diapositiva específica para previsualizar cambios.
+
+## 4. Inserción de Videos (`{{video:nombre}}`)
+
+- **Objetivo**: Reemplazar figuras por videos (.mp4) manteniendo posición y controlando el aspect ratio.
+- **Notas Técnicas**:
+  - Usar el método experimental `shapes.add_movie()` de `python-pptx`.
+  - Requiere una "poster frame image" (imagen estática de previsualización) obligatoria.
+  - Gestión de Aspect Ratio: Implementar lógica de "Letterboxing" (añadir barras) o "Zoom/Crop" para que el video no se deforme si la figura original tiene dimensiones distintas.
+  - Posible dependencia adicional (`moviepy` o similar) si se desea extraer el poster frame del video automáticamente.

@@ -85,18 +85,26 @@ class PPTXService:
                                 ))
                                 seen_vars.add(var_key)
 
-                # 2. Check Image variables in Alt Text
+                # 2. Check variables in Alt Text (Image or Video)
                 alt_text = self._get_alt_text(shape)
                 if alt_text:
                     matches = self.var_regex.findall(alt_text)
                     for match in matches:
-                        # Normalize image variables (remove 'image:' prefix if present)
-                        clean_match = match.replace("image:", "")
-                        var_key = f"image:{clean_match}:{slide_idx}"
+                        var_type = "image"
+                        clean_match = match
+                        
+                        if match.startswith("image:"):
+                            clean_match = match.replace("image:", "", 1)
+                            var_type = "image"
+                        elif match.startswith("video:"):
+                            clean_match = match.replace("video:", "", 1)
+                            var_type = "video"
+                        
+                        var_key = f"{var_type}:{clean_match}:{slide_idx}"
                         if var_key not in seen_vars:
                             variables.append(VariableInfo(
                                 name=clean_match,
-                                type="image",
+                                type=var_type,
                                 slide_index=slide_idx
                             ))
                             seen_vars.add(var_key)
@@ -217,6 +225,93 @@ class PPTXService:
             
         if not image_replaced:
             raise Exception(f"No image variable found with Alt Text '{{{{{variable_name}}}}}'")
+        
+        try:
+            prs.save(str(presentation_path))
+        except Exception as e:
+            raise Exception(f"Failed to save presentation: {str(e)}")
+        
+        return True
+
+    def insert_video(
+        self,
+        presentation_id: str,
+        variable_name: str,
+        video_path: str,
+        poster_path: str
+    ) -> bool:
+        """
+        Replace a shape with a video by finding {{variable_name}} or {{video:variable_name}} in Alt Text.
+        Includes automatic aspect ratio calculation (Letterboxing).
+        """
+        presentation_path = self.file_service.get_presentation_path(presentation_id)
+        
+        try:
+            prs = Presentation(str(presentation_path))
+        except Exception as e:
+            raise Exception(f"Failed to load presentation: {str(e)}")
+        
+        # Get video dimensions using cv2
+        import cv2
+        vid = cv2.VideoCapture(video_path)
+        v_w = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        v_h = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        vid.release()
+        
+        if v_w == 0 or v_h == 0:
+            raise Exception("Could not determine video dimensions")
+            
+        video_aspect = v_w / v_h
+        video_replaced = False
+        
+        patterns = ["{{" + variable_name + "}}", "{{video:" + variable_name + "}}"]
+        
+        for slide in prs.slides:
+            for shape in list(slide.shapes):
+                alt_text = self._get_alt_text(shape)
+                if alt_text and any(p == alt_text.strip() for p in patterns):
+                    video_replaced = True
+                    
+                    # Original geometry
+                    t_l, t_t = shape.left, shape.top
+                    t_w, t_h = shape.width, shape.height
+                    target_aspect = t_w / t_h
+                    
+                    # Calculate new dimensions (Letterboxing)
+                    if video_aspect > target_aspect:
+                        # Video is wider than target area (relative to height)
+                        new_w = t_w
+                        new_h = int(t_w / video_aspect)
+                        offset_l = 0
+                        offset_t = (t_h - new_h) // 2
+                    else:
+                        # Video is taller than target area (relative to width)
+                        new_h = t_h
+                        new_w = int(t_h * video_aspect)
+                        offset_t = 0
+                        offset_l = (t_w - new_w) // 2
+                    
+                    try:
+                        # Add movie
+                        # Note: mime_type is usually 'video/mp4'
+                        slide.shapes.add_movie(
+                            video_path,
+                            t_l + offset_l,
+                            t_t + offset_t,
+                            new_w,
+                            new_h,
+                            poster_frame_image=poster_path,
+                            mime_type='video/mp4'
+                        )
+                        
+                        # Remove original shape
+                        sp = shape._element
+                        sp.getparent().remove(sp)
+                    except Exception as e:
+                        raise Exception(f"Failed to insert video: {str(e)}")
+        
+        if not video_replaced:
+            raise Exception(f"No video variable found with Alt Text '{{{{{variable_name}}}}}'")
         
         try:
             prs.save(str(presentation_path))

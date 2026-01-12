@@ -11,6 +11,7 @@ from app.models.schemas import (
     PresentationListResponse,
     TextInsertRequest,
     ImageInsertRequest,
+    VideoInsertRequest,
     ContentInsertResponse
 )
 from app.services.file_service import FileService
@@ -204,6 +205,65 @@ async def download_presentation(presentation_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to download presentation: {str(e)}"
+        )
+
+
+@router.post(
+    "/{presentation_id}/video",
+    response_model=ContentInsertResponse,
+    summary="Replace a video variable in the presentation",
+    description="Replace an existing shape whose Alt Text matches {{variable_name}} or {{video:variable_name}}."
+)
+async def insert_video(
+    presentation_id: str,
+    variable_name: str = Form(..., description="Variable name to replace (without {{}} )"),
+    video: UploadFile = File(..., description="Video file to insert (.mp4)"),
+    poster: Optional[UploadFile] = File(None, description="Optional poster frame image")
+):
+    """
+    Replace a shape with a video identifying it by its Alt Text variable.
+    
+    - **presentation_id**: ID of the presentation
+    - **variable_name**: Name of the variable (will search for {{variable_name}} or {{video:variable_name}} in Alt Text)
+    - **video**: Video file to insert (.mp4)
+    - **poster**: Optional poster frame image. If not provided, it will be extracted from the video.
+    """
+    try:
+        file_service = FileService()
+        pptx_service = PPTXService(file_service)
+        
+        # Save video
+        video_id, video_filename = await file_service.save_video(video)
+        video_path = file_service.get_video_path(video_id)
+        
+        # Determine poster path
+        poster_path = None
+        if poster:
+            # Save user-provided poster
+            poster_id, poster_filename = await file_service.save_image(poster)
+            poster_path = file_service.get_image_path(poster_id)
+        else:
+            # Extract automatic poster
+            poster_path = file_service.extract_poster_frame(video_path)
+            
+        # Insert video
+        pptx_service.insert_video(
+            presentation_id=presentation_id,
+            variable_name=variable_name,
+            video_path=str(video_path),
+            poster_path=str(poster_path)
+        )
+        
+        return ContentInsertResponse(
+            success=True,
+            message=f"Video variable '{{{{{variable_name}}}}}' replaced successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to replace video variable: {str(e)}"
         )
 
 

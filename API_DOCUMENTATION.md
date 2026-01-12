@@ -73,8 +73,20 @@ _Este endpoint crea una copia de trabajo del template y devuelve un `presentatio
 `POST /api/v1/presentations/{presentation_id}/image`  
 **Body (multipart/form-data):**
 
-- `variable_name`: "foto"
+- `variable_name`: "foto_perfil"
 - `image`: [Archivo binario]
+
+#### POST `/api/v1/presentations/{presentation_id}/video`
+
+Reemplaza una figura por un video (.mp4) identificado por su variable en el Alt Text.
+
+**Body (multipart/form-data):**
+
+- `variable_name`: "video_demo"
+- `video`: [Archivo binario .mp4]
+- `poster` (opcional): [Archivo binario imagen] - Si no se envía, se extraerá automáticamente del video.
+
+---
 
 ### 5. Descargar Archivo
 

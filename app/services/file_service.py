@@ -22,6 +22,7 @@ class FileService:
         self.base_dir = Path(base_dir)
         self.templates_dir = self.base_dir / "uploads" / "templates"
         self.images_dir = self.base_dir / "uploads" / "images"
+        self.videos_dir = self.base_dir / "uploads" / "videos"
         self.outputs_dir = self.base_dir / "outputs"
         
         # Create directories if they don't exist
@@ -31,6 +32,7 @@ class FileService:
         """Create necessary directories"""
         self.templates_dir.mkdir(parents=True, exist_ok=True)
         self.images_dir.mkdir(parents=True, exist_ok=True)
+        self.videos_dir.mkdir(parents=True, exist_ok=True)
         self.outputs_dir.mkdir(parents=True, exist_ok=True)
     
     def generate_id(self) -> str:
@@ -135,6 +137,69 @@ class FileService:
             )
         
         return image_id, filename
+
+    async def save_video(self, file: UploadFile) -> tuple[str, str]:
+        """
+        Save an uploaded video file
+        
+        Args:
+            file: Uploaded file object
+            
+        Returns:
+            Tuple of (video_id, filename)
+        """
+        allowed_extensions = {'.mp4', '.avi', '.mov', '.wmv'}
+        file_extension = Path(file.filename).suffix.lower() if file.filename else ".mp4"
+        
+        if file_extension not in allowed_extensions:
+            # Fallback to .mp4 if unknown but it's a video
+            if file.content_type and file.content_type.startswith('video/'):
+                file_extension = '.mp4'
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid video format. Allowed formats: {', '.join(allowed_extensions)}"
+                )
+        
+        video_id = self.generate_id()
+        filename = f"{video_id}{file_extension}"
+        file_path = self.videos_dir / filename
+        
+        try:
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to save video: {str(e)}"
+            )
+        
+        return video_id, filename
+
+    def extract_poster_frame(self, video_path: Path) -> Path:
+        """
+        Extract the first frame of a video to use as a poster image
+        """
+        import cv2
+        
+        poster_path = video_path.with_suffix('.jpg')
+        
+        try:
+            vidcap = cv2.VideoCapture(str(video_path))
+            success, image = vidcap.read()
+            if success:
+                cv2.imwrite(str(poster_path), image)
+                return poster_path
+            else:
+                raise Exception("Could not read video frame")
+        except Exception as e:
+            # Create a blank fallback if cv2 fails or no frame detected
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to extract poster frame: {str(e)}"
+            )
+        finally:
+            vidcap.release()
     
     def get_template_path(self, template_id: str) -> Path:
         """
@@ -180,6 +245,19 @@ class FileService:
         raise HTTPException(
             status_code=404,
             detail=f"Image with ID '{image_id}' not found"
+        )
+    
+    def get_video_path(self, video_id: str) -> Path:
+        """
+        Get the path to a video file
+        """
+        for file_path in self.videos_dir.glob(f"{video_id}.*"):
+            if file_path.is_file() and file_path.suffix != '.jpg':
+                return file_path
+        
+        raise HTTPException(
+            status_code=404,
+            detail=f"Video with ID '{video_id}' not found"
         )
     
     def create_presentation_path(self, presentation_id: str) -> Path:

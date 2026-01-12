@@ -26,9 +26,14 @@ Para crear una variable de texto, simplemente inserta un cuadro de texto normal 
 
 ---
 
-## 2. Variables de Imagen
+## 2. Variables de Imagen y Video
 
-Para las imágenes, utilizamos el campo **Texto Alternativo** (Alt Text) de PowerPoint.
+Para los recursos multimedia, utilizamos el campo **Texto Alternativo** (Alt Text) de PowerPoint.
+
+- **Imágenes**: Escribe `{{nombre}}` o `{{image:nombre}}` en el Alt Text de una imagen de referencia.
+- **Videos**: Escribe `{{nombre}}` o `{{video:nombre}}` en el Alt Text de una forma (rectángulo) de referencia.
+
+---
 
 ### Pasos:
 

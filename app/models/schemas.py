@@ -55,6 +55,11 @@ class ImageInsertRequest(BaseModel):
     variable_name: str = Field(..., description="Variable name to replace (from Alt Text)")
 
 
+class VideoInsertRequest(BaseModel):
+    """Request to insert a video into a variable"""
+    variable_name: str = Field(..., description="Variable name to replace (from Alt Text)")
+
+
 class TemplateInfo(BaseModel):
     """Basic information about a template"""
     template_id: str
