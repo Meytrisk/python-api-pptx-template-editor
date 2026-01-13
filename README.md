@@ -43,6 +43,19 @@ Para evitar que errores de sintaxis o importaciones falten lleguen a producción
    docker build -t pptx-test .
    ```
 
+## 💪 Robustez y Rendimiento
+
+La API ha sido sometida a pruebas de estrés con **50 usuarios concurrentes**, demostrando una estabilidad del **100% (cero fallos)** bajo carga intensa:
+
+| Operación            | Rendimiento | Latencia Media |
+| :------------------- | :---------- | :------------- |
+| **Lectura (Listar)** | ~240 req/s  | 200ms          |
+| **Creación PPTX**    | ~120 req/s  | 410ms          |
+| **Inyección Texto**  | ~75 req/s   | 650ms          |
+| **Inyección Imagen** | ~55 req/s   | 850ms          |
+
+_Pruebas realizadas utilizando el script `scripts/stress_test.py`._
+
 ## 📝 Ejemplo Rápido de Flujo
 
 1. **Subir Template**: Envía tu `.pptx` con `{{nombre}}` y obtén un `template_id`.
