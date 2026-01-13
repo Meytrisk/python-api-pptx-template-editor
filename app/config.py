@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     API_TITLE: str = "PPTX API"
     API_VERSION: str = "1.0.0"
     
+    # Security
+    API_TOKEN: str = "changeme_in_production"
+
     # CORS Settings
     # En producción, cambia esto a una lista de dominios específicos: ["https://tuapp.com"]
     CORS_ORIGINS: List[str] = ["*"]

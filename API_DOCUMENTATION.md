@@ -16,6 +16,10 @@ Esta API permite crear y modificar presentaciones de PowerPoint utilizando un si
 ## Información General
 
 **URL Base:** `http://localhost:8000`
+**Autenticación:** Bearer Token
+
+- Header: `Authorization: Bearer <API_TOKEN>`
+- Configuración: Variable de entorno `API_TOKEN`.
 
 ---
 

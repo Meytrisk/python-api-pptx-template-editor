@@ -26,3 +26,12 @@ Este documento registra funcionalidades planificadas para el futuro que no se de
   - Requiere una "poster frame image" (imagen estática de previsualización) obligatoria.
   - Gestión de Aspect Ratio: Implementar lógica de "Letterboxing" (añadir barras) o "Zoom/Crop" para que el video no se deforme si la figura original tiene dimensiones distintas.
   - Posible dependencia adicional (`moviepy` o similar) si se desea extraer el poster frame del video automáticamente.
+
+## 5. Nombres Personalizados para Templates
+
+- **Objetivo**: Permitir que el usuario asigne un nombre descriptivo al subir un template (ej: "Propuesta_Comercial_V1") en lugar de depender solo del ID o el nombre del archivo original.
+
+## 6. Persistencia de Metadatos de Presentación
+
+- **Objetivo**: Cuando se crea una presentación, guardar la relación con su template de origen (ID y Nombre del template).
+- **Caso de Uso**: Poder consultar una presentación y saber exactamente qué diseño base utilizó.

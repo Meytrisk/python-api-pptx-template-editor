@@ -1,11 +1,12 @@
 """
 Main FastAPI application for PPTX API
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routes import templates, presentations
+from app.api.deps import verify_token
 from app.models.schemas import HealthResponse
 from app.config import settings
 
@@ -29,8 +30,15 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(templates.router)
-app.include_router(presentations.router)
+# Include routers with security dependency
+app.include_router(
+    templates.router,
+    dependencies=[Depends(verify_token)]
+)
+app.include_router(
+    presentations.router,
+    dependencies=[Depends(verify_token)]
+)
 
 
 @app.get("/", response_model=HealthResponse, tags=["health"])
